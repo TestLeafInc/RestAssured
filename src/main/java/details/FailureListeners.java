@@ -11,15 +11,19 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.FailureConfig;
 import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
+import io.restassured.listener.ResponseValidationFailureListener;
 import io.restassured.path.json.JsonPath;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import static org.hamcrest.Matchers.*;
+import static io.restassured.config.FailureConfig.failureConfig;
 
-public class LearnHeaders {
+public class FailureListeners {
 	
 	
 	
@@ -37,20 +41,18 @@ public class LearnHeaders {
 		headersList.add(new Header("content-type", "application/json"));
 		headersList.add(new Header("accept", "application/xml"));
 		
-		Headers headersMap = new Headers(headersList);
+		ResponseValidationFailureListener emailOnFailure = 
+				(reqSpec, respSpec, resp) -> 
+				EmailService.sendEmail("babu@testleaf.com", "Important test failed! Status code was: " + resp.statusCode());
 				
 		// Step 3: Request type - Post wth Content Type -> Response
-		Response response = RestAssured
-				.given()
-				.log()
-				.all()
-				.param("sysparm_limit", "1")
-				.headers(headersMap)
-				/*.header(new Header("content-type", "application/json"))
-				.header(new Header("accept", "application/xml"))*/
-				.get();
-				
-		response.prettyPrint();
+		RestAssured
+				 .given()
+				 	.config(RestAssured.config().failureConfig(failureConfig().with().failureListeners(emailOnFailure)))
+				 .when()
+				  	.get()
+				  .then()
+					.statusCode(201);
 				
 			
 	}

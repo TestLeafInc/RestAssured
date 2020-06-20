@@ -27,25 +27,29 @@ public class GetCookies {
 		// Add the parameters
 		Map<String, String> parametersMap = new HashMap<String, String>();
 		parametersMap.put("category", "software");
-		parametersMap.put("sysparm_fields", "number, sys_id");
-		
-		Cookie session = new Cookie.Builder("JSESSIONID","5B6B38E26AC2DCADACC7F614B506D9BB").build();
-		
+				
 		// Step 3: Request type - Get + query param -> Response
 		Response response = RestAssured
 				.given()
-				.cookie(session)
-				.params(parametersMap)
-				.get();
+				.queryParams(parametersMap)
+				.cookie(new Cookie.Builder("JSESSIONID").build())
+				.get()
+				.then()
+				.assertThat()
+				.statusCode(200)
+				.extract()
+				.response();
 		
-		/*Map<String, String> cookies = response.getCookies();
+		response.prettyPrint();
+		
+		// Print the cookies
+		Map<String, String> cookies = response.getCookies();
 		for (Entry<String, String> eachCookie : cookies.entrySet()) {
 			System.out.println(eachCookie.getKey());
 			System.out.println(eachCookie.getValue());
-		}*/
+			System.out.println();
+		}
 		
-		/*String session = response.getCookie("JSESSIONID");
-		System.out.println(session);*/
 		
 	}
 	
